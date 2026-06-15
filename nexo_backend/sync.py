@@ -149,7 +149,7 @@ class DatabaseSync:
                 for f in feeds
             ],
             "sync_timestamp": datetime.now().isoformat(),
-            "db_path": self.db.db_path,
+            "version": "4.0",
         }
         
         output_file = self.output_dir / "metadata.json"

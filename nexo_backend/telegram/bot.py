@@ -196,7 +196,7 @@ class TelegramBot:
 
         except Exception as e:
             logger.error(f"Error handling IOC download: {e}")
-            await query.message.reply_text(f"❌ Error generating IOC report: {str(e)[:100]}")
+            await query.message.reply_text("❌ Error generating IOC report. Please try again.")
 
     async def send_message_to_admin(self, text: str, parse_mode: str = "HTML"):
         """Send message to admin only."""
@@ -460,7 +460,7 @@ class TelegramBot:
             await update.message.reply_text(message)
         except Exception as e:
             logger.error(f"Error exporting all IOCs: {str(e)}")
-            await update.message.reply_text(f"❌ Export failed: {str(e)}")
+            await update.message.reply_text("❌ Export failed. Please try again.")
 
     async def _handle_export_new_iocs(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /export_new_iocs — admin only."""
@@ -485,7 +485,7 @@ class TelegramBot:
             await update.message.reply_text(message)
         except Exception as e:
             logger.error(f"Error exporting new IOCs: {str(e)}")
-            await update.message.reply_text(f"❌ Export failed: {str(e)}")
+            await update.message.reply_text("❌ Export failed. Please try again.")
 
     async def _handle_export_article_iocs(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /export_article_iocs — admin only."""
@@ -520,7 +520,7 @@ class TelegramBot:
             await update.message.reply_text(message)
         except Exception as e:
             logger.error(f"Error exporting article IOCs: {str(e)}")
-            await update.message.reply_text(f"❌ Export failed: {str(e)}")
+            await update.message.reply_text("❌ Export failed. Please try again.")
 
     # ============== Notification Formatting ==============
 

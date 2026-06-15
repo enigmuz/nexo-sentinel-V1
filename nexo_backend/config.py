@@ -206,7 +206,7 @@ class Settings:
         self.feed_fetch_interval = _env_int("FEED_FETCH_INTERVAL", 30)
         
         # API server settings
-        self.api_server_host = _env("API_SERVER_HOST", "0.0.0.0")
+        self.api_server_host = _env("API_SERVER_HOST", "127.0.0.1")
         self.api_server_port = _env_int("API_SERVER_PORT", 5000)
 
 

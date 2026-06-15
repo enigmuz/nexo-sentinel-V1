@@ -53,7 +53,11 @@ def create_app(db: Database = None) -> Flask:
         db = Database(settings.database_path)
 
     app = Flask(__name__)
-    CORS(app)  # Allow cross-origin requests from dashboard
+    # SECURITY: Restrict CORS to localhost only (no wildcard)
+    CORS(app, origins=["http://localhost:*", "http://127.0.0.1:*"])
+    
+    # SECURITY: Disable debug mode, suppress server header
+    app.config['PROPAGATE_EXCEPTIONS'] = False
 
     # ------------------------------------------------------------------
     # Health
@@ -75,7 +79,7 @@ def create_app(db: Database = None) -> Flask:
             return jsonify(stats)
         except Exception as exc:
             logger.error(f"Error fetching statistics: {exc}")
-            return jsonify({"error": str(exc)}), 500
+            return jsonify({"error": "Internal server error"}), 500
 
     # ------------------------------------------------------------------
     # Articles
@@ -83,10 +87,18 @@ def create_app(db: Database = None) -> Flask:
     @app.route("/api/articles")
     def articles_list():
         try:
-            limit = request.args.get("limit", 50, type=int)
+            limit = min(request.args.get("limit", 50, type=int), 200)
             status = request.args.get("status")
             severity = request.args.get("severity")
             category = request.args.get("category")
+            
+            # Input validation
+            valid_severities = {"Critical", "High", "Medium", "Low", "Info"}
+            valid_statuses = {"pending", "processed", "ignored", "error"}
+            if severity and severity not in valid_severities:
+                return jsonify({"error": "Invalid severity"}), 400
+            if status and status not in valid_statuses:
+                return jsonify({"error": "Invalid status"}), 400
 
             if severity:
                 rows = _run_async(db.get_articles_by_severity(severity, limit))
@@ -105,7 +117,7 @@ def create_app(db: Database = None) -> Flask:
             return jsonify([_serialize_row(r) for r in rows])
         except Exception as exc:
             logger.error(f"Error fetching articles: {exc}")
-            return jsonify({"error": str(exc)}), 500
+            return jsonify({"error": "Internal server error"}), 500
 
     @app.route("/api/articles/<uid>")
     def article_detail(uid: str):
@@ -121,7 +133,7 @@ def create_app(db: Database = None) -> Flask:
             return jsonify(result)
         except Exception as exc:
             logger.error(f"Error fetching article {uid}: {exc}")
-            return jsonify({"error": str(exc)}), 500
+            return jsonify({"error": "Internal server error"}), 500
 
     # ------------------------------------------------------------------
     # IOCs
@@ -140,7 +152,7 @@ def create_app(db: Database = None) -> Flask:
             return jsonify(grouped)
         except Exception as exc:
             logger.error(f"Error fetching IOCs: {exc}")
-            return jsonify({"error": str(exc)}), 500
+            return jsonify({"error": "Internal server error"}), 500
 
     @app.route("/api/iocs/<ioc_type>")
     def iocs_by_type(ioc_type: str):
@@ -149,7 +161,7 @@ def create_app(db: Database = None) -> Flask:
             return jsonify([_serialize_row(i) for i in iocs])
         except Exception as exc:
             logger.error(f"Error fetching IOCs by type {ioc_type}: {exc}")
-            return jsonify({"error": str(exc)}), 500
+            return jsonify({"error": "Internal server error"}), 500
 
     # ------------------------------------------------------------------
     # Metadata
@@ -160,15 +172,13 @@ def create_app(db: Database = None) -> Flask:
             feeds = _run_async(db.get_feed_sources(enabled_only=False))
             return jsonify({
                 "app_name": settings.app_name,
-                "hermes_enabled": settings.hermes_enabled,
-                "ollama_model": settings.ollama_model,
-                "feed_sources": [_serialize_row(f) for f in feeds],
+                "feed_count": len(feeds),
                 "feed_fetch_interval_minutes": settings.feed_fetch_interval,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             })
         except Exception as exc:
             logger.error(f"Error fetching metadata: {exc}")
-            return jsonify({"error": str(exc)}), 500
+            return jsonify({"error": "Internal server error"}), 500
 
     return app
 
@@ -187,7 +197,7 @@ def main():
     app.run(
         host=settings.api_server_host,
         port=settings.api_server_port,
-        debug=settings.debug,
+        debug=False,  # SECURITY: Never enable debug in production
     )
 
 
