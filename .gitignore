@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Database (created at runtime)
+*.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+
+# Next.js (removed)
+.next/
+node_modules/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temp
+tmp_upload/
