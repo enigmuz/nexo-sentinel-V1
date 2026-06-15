@@ -157,7 +157,7 @@ flowchart LR
 
 ```bash
 # Clone the repository
-git clone https://github.com/bluewhalecolombo/nexo-sentinel-agent.git
+git clone https://github.com/enigmuz/nexo-sentinel-V1.git
 cd nexo-sentinel-agent
 
 # Install Python dependencies
